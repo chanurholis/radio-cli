@@ -1,0 +1,15 @@
+[project]
+name = "radio-cli"
+version = "0.1.0"
+description = "Internet radio from the terminal"
+requires-python = ">=3.8"
+
+[project.scripts]
+radio = "radio:main"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["radio", "tui"]
