@@ -24,7 +24,7 @@ return {
 Plain lazy.nvim: `{ "chanurholis/radio-cli" }`. vim-plug (Vim 9 too): `Plug 'chanurholis/radio-cli'`.
 
 ```vim
-:Radio                 " toggle the UI in a floating window; hide it and the music keeps playing
+:Radio                 " open the UI in a floating window; <Esc> (or :Radio again) hides it, music keeps playing
 :Radio play groove     " any CLI command below works: local bandung, tag jazz, search bbc, add, rm, list
 ```
 

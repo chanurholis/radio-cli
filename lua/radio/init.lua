@@ -1,4 +1,4 @@
--- radio.nvim: floating terminal around radio.py. :Radio toggles the UI (music keeps playing while hidden),
+-- radio.nvim: floating terminal around radio.py. :Radio toggles the UI, <Esc> in it hides (music keeps playing),
 -- :Radio <args> runs a one-off command (play groove, local bandung, ...). require("radio").now() -> statusline text.
 local M = {}
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":h:h:h")
@@ -26,8 +26,17 @@ local function float(b)
     relative = "editor", width = w, height = h, col = math.floor((W - w) / 2), row = math.floor((H - h) / 2),
     style = "minimal", border = M.opts.border,
   })
+  -- the float is in terminal mode, so normal-mode keys never reach nvim: <Esc> hides it (music keeps playing)
+  vim.keymap.set("t", "<Esc>", function() M.hide() end, { buffer = b, desc = "Hide radio" })
   vim.cmd.startinsert()
   return w_id
+end
+
+function M.hide()
+  local w_id = vim.api.nvim_get_current_win()
+  if w_id == win then win = nil end
+  vim.cmd.stopinsert()
+  vim.api.nvim_win_hide(w_id)
 end
 
 local function term(cmd, on_exit)
@@ -50,7 +59,7 @@ function M.toggle(args)
     return
   end
   if win and vim.api.nvim_win_is_valid(win) then -- hide: process (and music) keeps running
-    vim.api.nvim_win_hide(win); win = nil
+    vim.api.nvim_set_current_win(win); M.hide()
     return
   end
   if buf and vim.api.nvim_buf_is_valid(buf) then
