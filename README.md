@@ -1,6 +1,6 @@
 # radio-cli
 
-Internet radio in the terminal. Python stdlib only, plus `mpv` or `ffplay`. Interactive UI and plain commands.
+Internet radio in the terminal **and inside Neovim/Vim**. Python stdlib only, plus `mpv` or `ffplay`. Interactive UI and plain commands.
 
 ## Install (macOS / Linux)
 
@@ -10,6 +10,33 @@ curl -fsSL https://raw.githubusercontent.com/USER/radio-cli/main/install.sh | ba
 
 or from a clone: `./install.sh`. The script installs `mpv` if missing (brew/apt/dnf/pacman),
 puts the program in `~/.local/share/radio-cli` and the `radio` command in `~/.local/bin`.
+
+## Neovim / LazyVim plugin
+
+Needs `python3` and `mpv` (`brew install mpv` / `apt install mpv`). LazyVim: drop this in `~/.config/nvim/lua/plugins/radio.lua`:
+
+```lua
+return {
+  { "chanurholis/radio-cli", cmd = "Radio", keys = { { "<leader>R", "<cmd>Radio<cr>", desc = "Radio" } } },
+}
+```
+
+Plain lazy.nvim: `{ "chanurholis/radio-cli" }`. vim-plug (Vim 9 too): `Plug 'chanurholis/radio-cli'`.
+
+```vim
+:Radio                 " toggle the UI in a floating window; hide it and the music keeps playing
+:Radio play groove     " any CLI command below works: local bandung, tag jazz, search bbc, add, rm, list
+```
+
+Statusline shows what plays (LazyVim, in the same plugins file):
+
+```lua
+  { "nvim-lualine/lualine.nvim", opts = function(_, o)
+      table.insert(o.sections.lualine_x, 1, { function() return require("radio").now() end, icon = "󰐹" })
+  end },
+```
+
+Options (all optional): `opts = { width = 0.8, height = 0.8, border = "rounded", python = "python3" }`.
 
 ## Usage
 
