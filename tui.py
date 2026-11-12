@@ -4,6 +4,19 @@ import radio
 
 BARS = "▁▂▃▄▅▆▇█"
 REC_DIR = os.path.expanduser(os.environ.get("RADIO_REC", "~/Music/radio"))
+NOW_FILE = os.path.expanduser("~/.cache/radio/now")  # "station · title" for status lines (nvim, tmux, ...)
+
+
+def now_playing(text):
+    """publish what plays to NOW_FILE; empty text removes it"""
+    try:
+        if not text:
+            return os.remove(NOW_FILE)
+        os.makedirs(os.path.dirname(NOW_FILE), exist_ok=True)
+        with open(NOW_FILE, "w") as f:
+            f.write(text)
+    except OSError:
+        pass
 
 
 def notify(title, body):
@@ -104,11 +117,14 @@ class App:
     def play(self, name, url):
         self.stop()
         self.stream, self.now = Stream(url, 0 if self.muted else self.vol), name
+        self.last_title = ""
+        now_playing(name)
 
     def stop(self):
         if self.stream:
             self.stream.close()
             self.stream = self.now = None
+            now_playing("")
 
     def volume(self, delta=None, mute=None):
         if mute is not None:
@@ -125,6 +141,7 @@ class App:
         if s.title and s.title != self.last_title:  # track changed -> desktop notification
             self.last_title = s.title
             notify(f"radio: {self.now}", s.title)
+            now_playing(f"{self.now} · {s.title}")
         # ponytail: bars driven by throughput (random while data flows), not real audio amplitude
         self.bars = self.bars[1:] + [random.randint(2, 7) if s.kbps else 0]
         sig = "".join(BARS[b] for b in self.bars)
@@ -214,15 +231,17 @@ class App:
         curses.curs_set(0)
         self.scr.timeout(200)  # redraw every 200ms for bars/bandwidth
         self.draw()
-        while True:
-            try:
-                k = self.scr.getkey()
-            except curses.error:  # timeout
-                self.draw(); continue
-            if not self.key(k):
-                break
-            self.draw()
-        self.stop()
+        try:
+            while True:
+                try:
+                    k = self.scr.getkey()
+                except curses.error:  # timeout
+                    self.draw(); continue
+                if not self.key(k):
+                    break
+                self.draw()
+        finally:
+            self.stop()  # also on a crash, so NOW_FILE never goes stale
 
 
 def run():

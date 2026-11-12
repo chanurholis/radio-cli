@@ -29,3 +29,11 @@ except subprocess.TimeoutExpired:
     p.kill(); rc = "timeout"
 assert rc == 0 and b"saved" in out and b"groove" in out and b"Traceback" not in out, (rc, out[-800:])
 print("tui ok")
+
+# now-playing file: written on play/title change, removed on stop
+import tui
+tui.NOW_FILE = "/tmp/radio-test-now"
+tui.now_playing("x · y"); assert open(tui.NOW_FILE).read() == "x · y"
+tui.now_playing(""); assert not os.path.exists(tui.NOW_FILE)
+tui.now_playing("")  # idempotent
+print("now ok")
